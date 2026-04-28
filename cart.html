@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="description" content="Shopping cart — Fior Flower Shop" />
+
+  <title>Cart — Fior Flower Shop</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Baloo+Chettan|Poppins:400,600,700,800&display=swap" rel="stylesheet">
+  <link href="css/shop.css" rel="stylesheet" />
+</head>
+
+<body>
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="index.html">Fior</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a class="cart-pill" href="cart.html" aria-current="page">
+          Cart <span id="cartCount">0</span>
+        </a>
+        <a href="checkout.html">Checkout</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="section" style="padding-top: 48px;">
+    <div class="section-heading" style="width: min(1180px, calc(100% - 32px)); margin: 0 auto 24px;">
+      <div>
+        <span class="eyebrow">Your basket</span>
+        <h1>Shopping cart</h1>
+      </div>
+      <p>Review quantities. Cart is stored in your browser (localStorage).</p>
+    </div>
+
+    <div class="checkout-layout" style="width: min(1180px, calc(100% - 32px)); margin: 0 auto; grid-template-columns: 1fr;">
+      <aside class="panel" aria-label="Shopping cart">
+        <h2>Items</h2>
+        <div class="cart-items" id="cartItems"></div>
+        <div class="cart-total">
+          <span>Total</span>
+          <span id="cartTotal">฿0</span>
+        </div>
+        <div class="cart-page-actions">
+          <a class="btn btn-secondary" href="shop.html">Continue shopping</a>
+          <a class="btn btn-primary" href="checkout.html">Proceed to checkout</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="displayYear"></span> Fior Flower Shop.</p>
+  </footer>
+
+  <script src="js/custom.js"></script>
+  <script src="js/cart-core.js"></script>
+  <script src="js/nav-cart-count.js"></script>
+  <script src="js/cart-page.js"></script>
+</body>
+
+</html>

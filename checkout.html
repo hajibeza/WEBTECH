@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="description" content="Checkout — Fior Flower Shop" />
+
+  <title>Checkout — Fior Flower Shop</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Baloo+Chettan|Poppins:400,600,700,800&display=swap" rel="stylesheet">
+  <link href="css/shop.css" rel="stylesheet" />
+</head>
+
+<body>
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="index.html">Fior</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a class="cart-pill" href="cart.html">
+          Cart <span id="cartCount">0</span>
+        </a>
+        <a href="checkout.html" aria-current="page">Checkout</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="section" id="checkout" style="padding-top: 48px;">
+    <div class="section-heading" style="width: min(1180px, calc(100% - 32px)); margin: 0 auto 24px;">
+      <div>
+        <span class="eyebrow">Almost there</span>
+        <h1>Checkout</h1>
+      </div>
+      <p>Confirm your order summary and enter delivery details. Orders are saved locally as mock data.</p>
+    </div>
+
+    <div class="checkout-layout" style="width: min(1180px, calc(100% - 32px)); margin: 0 auto;">
+      <aside class="panel" aria-label="Order summary">
+        <h2>Order summary</h2>
+        <div class="cart-items" id="checkoutCartSummary"></div>
+        <div class="cart-total">
+          <span>Total</span>
+          <span id="cartTotal">฿0</span>
+        </div>
+        <p style="margin: 16px 0 0; font-size: 14px;">
+          <a class="hero-inline-link" href="cart.html">Edit cart</a>
+        </p>
+      </aside>
+
+      <form class="panel checkout-form" id="checkoutForm">
+        <h2>Delivery details</h2>
+        <div class="form-row">
+          <input type="text" name="customerName" placeholder="Full name" required autocomplete="name">
+          <input type="tel" name="phone" placeholder="Phone number" required autocomplete="tel">
+        </div>
+        <input type="email" name="email" placeholder="Email address" required autocomplete="email">
+        <textarea name="address" placeholder="Delivery address" required autocomplete="street-address"></textarea>
+        <button class="btn btn-primary" type="submit">Place order</button>
+        <p class="message" id="orderMessage" role="status"></p>
+      </form>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="displayYear"></span> Fior Flower Shop.</p>
+  </footer>
+
+  <script src="js/custom.js"></script>
+  <script src="js/cart-core.js"></script>
+  <script src="js/nav-cart-count.js"></script>
+  <script src="js/checkout-page.js"></script>
+</body>
+
+</html>

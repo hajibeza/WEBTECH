@@ -1,0 +1,21 @@
+{
+  "name": "fior-ecommerce",
+  "version": "1.0.0",
+  "description": "Fior flower shop e-commerce web app with Express and SQLite.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "ecommerce",
+    "express",
+    "sqlite"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "latest",
+    "sqlite3": "latest"
+  }
+}

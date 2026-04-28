@@ -5,10 +5,9 @@
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <meta name="description" content="Fior flower shop — welcome" />
-  <meta name="author" content="" />
+  <meta name="description" content="Fior flower shop — browse products" />
 
-  <title>Fior Flower Shop</title>
+  <title>Shop — Fior Flower Shop</title>
 
   <link href="https://fonts.googleapis.com/css?family=Baloo+Chettan|Poppins:400,600,700,800&display=swap" rel="stylesheet">
   <link href="css/shop.css" rel="stylesheet" />
@@ -19,8 +18,8 @@
     <nav class="nav" aria-label="Main navigation">
       <a class="brand" href="index.html">Fior</a>
       <div class="nav-links">
-        <a href="index.html" aria-current="page">Home</a>
-        <a href="shop.html">Shop</a>
+        <a href="index.html">Home</a>
+        <a href="shop.html" aria-current="page">Shop</a>
         <a class="cart-pill" href="cart.html">
           Cart <span id="cartCount">0</span>
         </a>
@@ -32,15 +31,14 @@
   <main id="home">
     <section class="hero">
       <div class="hero-copy">
-        <span class="eyebrow">Fresh flower delivery</span>
-        <h1>Send beautiful flowers today.</h1>
+        <span class="eyebrow">Flower shop</span>
+        <h1>Shop bouquets &amp; gifts.</h1>
         <p>
-          Browse products on <a class="hero-inline-link" href="shop.html">shop.html</a>,
-          manage your basket on <a class="hero-inline-link" href="cart.html">cart.html</a>,
-          and complete your order on <a class="hero-inline-link" href="checkout.html">checkout.html</a>.
+          Add items to your cart, then open <a class="hero-inline-link" href="cart.html">cart.html</a>
+          or go straight to <a class="hero-inline-link" href="checkout.html">checkout.html</a>.
         </p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="shop.html">Shop products</a>
+          <a class="btn btn-primary" href="#products">Browse products</a>
           <a class="btn btn-secondary" href="cart.html">View cart</a>
         </div>
       </div>
@@ -52,31 +50,29 @@
       </div>
     </section>
 
-    <section class="section" aria-labelledby="moreTitle">
+    <section class="section" id="products" aria-labelledby="productsTitle">
       <div class="section-heading">
         <div>
-          <span class="eyebrow">Explore</span>
-          <h2 id="moreTitle">More pages</h2>
+          <span class="eyebrow">Our flowers</span>
+          <h2 id="productsTitle">Popular Products</h2>
         </div>
         <p>
-          Original template pages.
+          Data from <code>data/products.json</code> (<code>id</code>, <code>name</code>, <code>price</code>, <code>image_url</code>, etc.).
         </p>
       </div>
-      <div class="explore-links">
-        <a class="btn btn-secondary" href="about.html">About</a>
-        <a class="btn btn-secondary" href="gallery.html">Gallery</a>
-        <a class="btn btn-secondary" href="contact.html">Contact</a>
-      </div>
+      <div class="product-grid" id="product-container"></div>
+      <p class="message" id="orderMessage" role="status" style="max-width: min(1180px, calc(100% - 32px)); margin: 16px auto 0;"></p>
     </section>
   </main>
 
   <footer class="site-footer">
-    <p>&copy; <span id="displayYear"></span> Fior Flower Shop.</p>
+    <p>&copy; <span id="displayYear"></span> Fior Flower Shop. <a class="footer-link" href="index.html">Home</a></p>
   </footer>
 
   <script src="js/custom.js"></script>
   <script src="js/cart-core.js"></script>
   <script src="js/nav-cart-count.js"></script>
+  <script src="js/shop.js"></script>
 </body>
 
 </html>
