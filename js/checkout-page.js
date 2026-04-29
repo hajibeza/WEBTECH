@@ -15,11 +15,22 @@ function renderSummary() {
 
   cart = C.loadCart();
   const lines = C.cartLineItems(catalog, cart);
+
+  if (cart.length > 0 && lines.length === 0) {
+    cartSummaryEl.innerHTML =
+      '<div class="product-load-error" role="alert">Saved cart items cannot be displayed. Use a local server so product data loads, or re-add items from the shop.</div>';
+    cartTotalEl.textContent = C.money.format(0);
+    if (cartCountEl) {
+      cartCountEl.textContent = String(C.rawCartQuantitySum());
+    }
+    return;
+  }
+
   cartSummaryEl.innerHTML = C.cartListMarkup(lines);
   cartTotalEl.textContent = C.money.format(C.cartMoneyTotal(lines));
 
   if (cartCountEl) {
-    cartCountEl.textContent = C.cartCount(lines);
+    cartCountEl.textContent = String(C.rawCartQuantitySum());
   }
 }
 
@@ -33,13 +44,13 @@ async function init() {
 
   try {
     catalog = await C.fetchCatalog();
-    renderSummary();
+    C.backfillCartSnapshots(catalog);
   } catch (error) {
     console.error(error);
-    cartSummaryEl.innerHTML =
-      '<p class="product-load-error" role="alert">Unable to load product data. Use a local server and try again.</p>';
-    return;
+    catalog = [];
   }
+
+  renderSummary();
 
   if (C.loadCart().length === 0) {
     orderMessageEl.textContent = "Your cart is empty. Add items before checkout.";

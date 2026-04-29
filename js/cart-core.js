@@ -49,10 +49,60 @@
     return Number.isFinite(value) ? value : 9999;
   }
 
+  /** Save name/price on each line so the cart page can render even if catalog fetch fails later. */
+  function copySnapshotFromProduct(line, product) {
+    line.name = product.name;
+    line.price = Number(product.price);
+    line.image_url = product.image_url || product.image || "";
+    line.stockSnapshot = stockOf(product);
+  }
+
+  /**
+   * Resolve a product for display and stock checks: prefer live catalog, else use snapshot on the line.
+   */
+  function lineProduct(item, catalog) {
+    const fromCatalog = catalog && catalog.length ? getProduct(catalog, item.productId) : null;
+    if (fromCatalog) {
+      return fromCatalog;
+    }
+    if (item.name != null && item.price != null) {
+      return {
+        id: item.productId,
+        name: item.name,
+        price: Number(item.price),
+        image_url: item.image_url || "",
+        stock: item.stockSnapshot != null ? Number(item.stockSnapshot) : 9999
+      };
+    }
+    return null;
+  }
+
+  /** After loading products.json, fill missing snapshot fields for older cart rows (productId-only). */
+  function backfillCartSnapshots(catalog) {
+    if (!catalog || !catalog.length) {
+      return;
+    }
+    const cart = loadCart();
+    let changed = false;
+    for (const item of cart) {
+      if (item.name != null && item.price != null) {
+        continue;
+      }
+      const p = getProduct(catalog, item.productId);
+      if (p) {
+        copySnapshotFromProduct(item, p);
+        changed = true;
+      }
+    }
+    if (changed) {
+      saveCart(cart);
+    }
+  }
+
   function cartLineItems(catalog, cart) {
     return cart
       .map((item) => {
-        const product = getProduct(catalog, item.productId);
+        const product = lineProduct(item, catalog);
         return product ? { ...item, product } : null;
       })
       .filter(Boolean);
@@ -60,6 +110,11 @@
 
   function cartCount(lines) {
     return lines.reduce((sum, line) => sum + line.quantity, 0);
+  }
+
+  /** Total quantity in raw cart (for badges) even if some lines cannot be rendered yet. */
+  function rawCartQuantitySum() {
+    return loadCart().reduce((sum, line) => sum + Number(line.quantity || 0), 0);
   }
 
   function cartMoneyTotal(lines) {
@@ -106,8 +161,11 @@
 
     if (existing) {
       existing.quantity += 1;
+      copySnapshotFromProduct(existing, product);
     } else {
-      cart.push({ productId: Number(productId), quantity: 1 });
+      const line = { productId: Number(productId), quantity: 1 };
+      copySnapshotFromProduct(line, product);
+      cart.push(line);
     }
 
     saveCart(cart);
@@ -115,10 +173,13 @@
   }
 
   function applyQuantityDelta(catalog, cart, productId, delta) {
-    const product = getProduct(catalog, productId);
     const item = cart.find((line) => line.productId === Number(productId));
+    if (!item) {
+      return cart;
+    }
 
-    if (!item || !product) {
+    const product = lineProduct(item, catalog);
+    if (!product) {
       return cart;
     }
 
@@ -136,7 +197,7 @@
   function buildOrderPayload(catalog, cart, formData) {
     const lineItemsRaw = cart
       .map((item) => {
-        const product = getProduct(catalog, item.productId);
+        const product = lineProduct(item, catalog);
         if (!product) {
           return null;
         }
@@ -194,6 +255,8 @@
     addToCart,
     applyQuantityDelta,
     buildOrderPayload,
-    persistOrder
+    persistOrder,
+    backfillCartSnapshots,
+    rawCartQuantitySum
   };
 })(window);

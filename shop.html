@@ -57,9 +57,19 @@
           <h2 id="productsTitle">Popular Products</h2>
         </div>
         <p>
-          Data from <code>data/products.json</code> (<code>id</code>, <code>name</code>, <code>price</code>, <code>image_url</code>, etc.).
+          Filter by category and search by name or description. Data from <code>data/products.json</code>.
         </p>
       </div>
+
+      <div class="shop-toolbar">
+        <label class="shop-search">
+          <span class="visually-hidden">Search products</span>
+          <input type="search" id="productSearch" name="q" placeholder="Search products…" autocomplete="off" enterkeyhint="search">
+        </label>
+        <div class="category-filters" id="categoryFilters" role="tablist" aria-label="Categories"></div>
+        <p class="shop-results-hint" id="productResultsHint" aria-live="polite"></p>
+      </div>
+
       <div class="product-grid" id="product-container"></div>
       <p class="message" id="orderMessage" role="status" style="max-width: min(1180px, calc(100% - 32px)); margin: 16px auto 0;"></p>
     </section>

@@ -13,11 +13,22 @@ function render() {
 
   cart = C.loadCart();
   const lines = C.cartLineItems(catalog, cart);
+
+  if (cart.length > 0 && lines.length === 0) {
+    cartItemsEl.innerHTML =
+      '<div class="product-load-error" role="alert">Saved cart items cannot be displayed. Open the site via a local server (same address for Shop and Cart) so <code>data/products.json</code> can load, or add products again from the shop.</div>';
+    cartTotalEl.textContent = C.money.format(0);
+    if (cartCountEl) {
+      cartCountEl.textContent = String(C.rawCartQuantitySum());
+    }
+    return;
+  }
+
   cartItemsEl.innerHTML = C.cartListMarkup(lines);
   cartTotalEl.textContent = C.money.format(C.cartMoneyTotal(lines));
 
   if (cartCountEl) {
-    cartCountEl.textContent = C.cartCount(lines);
+    cartCountEl.textContent = String(C.rawCartQuantitySum());
   }
 }
 
@@ -31,12 +42,13 @@ async function init() {
 
   try {
     catalog = await C.fetchCatalog();
-    render();
+    C.backfillCartSnapshots(catalog);
   } catch (error) {
     console.error(error);
-    cartItemsEl.innerHTML =
-      '<p class="product-load-error" role="alert">Unable to load product data. Use a local server and try again.</p>';
+    catalog = [];
   }
+
+  render();
 }
 
 if (cartItemsEl && C) {

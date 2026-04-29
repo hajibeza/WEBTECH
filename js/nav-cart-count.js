@@ -5,6 +5,8 @@
   }
 
   const cart = window.FiorCartCore.loadCart();
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalItems = window.FiorCartCore.rawCartQuantitySum
+    ? window.FiorCartCore.rawCartQuantitySum()
+    : cart.reduce((sum, item) => sum + item.quantity, 0);
   badge.textContent = String(totalItems);
 })();

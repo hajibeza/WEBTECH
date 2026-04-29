@@ -1,117 +1,202 @@
 /**
- * Shop page — product list flow (aligned with a typical sequence diagram):
- *
- *   requestProducts()
- *        │
- *        ├─► fetchJsonFile(path)  — HTTP GET, then body parsed as JSON
- *        │        │
- *        │        └─► returns Array<Product> in memory
- *        │
- *        └─► renderUI(products) — reads that array and writes HTML into #product-container
- *
- * Data flow summary:
- *   JSON file (disk) → HTTP response (bytes) → JS objects (array) → DOM (innerHTML strings)
- *
- * Cart logic (FiorCartCore) is separate: it reads/writes localStorage and uses the same
- * `catalog` array in memory for prices, names, and stock when you click "Add to cart".
+ * Shop page — load products, filter by category + search, render grid.
+ * `fullCatalog` holds every product for cart lookups; the grid shows a filtered subset only.
  */
 
 const C = window.FiorCartCore;
 const productsEl = document.querySelector("#product-container");
 const cartCountEl = document.querySelector("#cartCount");
 const orderHintEl = document.querySelector("#orderMessage");
+const searchInput = document.querySelector("#productSearch");
+const categoryFiltersEl = document.querySelector("#categoryFilters");
+const resultsHintEl = document.querySelector("#productResultsHint");
 
-/** Path passed to fetch(...) — relative to the current HTML page (e.g. shop.html → data/products.json). */
 const PRODUCTS_JSON_PATH = "data/products.json";
 
 if (!C) {
   console.error("shop.js: load cart-core.js before shop.js");
 }
 
-/**
- * In-memory copy of the catalog. Filled when renderUI() runs after a successful fetch.
- * The cart code uses this to resolve productId → name, price, stock.
- */
-let catalog = [];
+/** All products from JSON — always complete so Add to cart can resolve any id. */
+let fullCatalog = [];
 let cart = C ? C.loadCart() : [];
+let activeCategory = "all";
+let searchDebounceId = null;
 
-/**
- * Step 3 (diagram): take the product array and paint the grid.
- * Data in → DOM out: each product object becomes one `.product-card` chunk of HTML.
- */
-function renderUI(products) {
+function collectCategories(products) {
+  var set = {};
+  products.forEach(function (p) {
+    var c = (p.category || "").trim();
+    if (c) {
+      set[c] = true;
+    }
+  });
+  return Object.keys(set).sort();
+}
+
+function renderCategoryChips(categories) {
+  if (!categoryFiltersEl) {
+    return;
+  }
+
+  var chips = ['<button type="button" class="category-chip is-active" data-category="all" role="tab" aria-selected="true">All</button>'];
+  categories.forEach(function (cat) {
+    chips.push(
+      '<button type="button" class="category-chip" data-category="' +
+        escapeAttr(cat) +
+        '" role="tab" aria-selected="false">' +
+        escapeHtml(cat) +
+        "</button>"
+    );
+  });
+  categoryFiltersEl.innerHTML = chips.join("");
+}
+
+function escapeHtml(text) {
+  var div = document.createElement("div");
+  div.textContent = text == null ? "" : text;
+  return div.innerHTML;
+}
+
+function escapeAttr(text) {
+  return String(text == null ? "" : text)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;");
+}
+
+function getFilteredProducts() {
+  var q = (searchInput && searchInput.value ? searchInput.value : "").trim().toLowerCase();
+  var list = fullCatalog.slice();
+
+  if (activeCategory !== "all") {
+    list = list.filter(function (p) {
+      return (p.category || "").trim() === activeCategory;
+    });
+  }
+
+  if (q) {
+    list = list.filter(function (p) {
+      var name = (p.name || "").toLowerCase();
+      var desc = (p.description || "").toLowerCase();
+      var cat = (p.category || "").toLowerCase();
+      return name.includes(q) || desc.includes(q) || cat.includes(q);
+    });
+  }
+
+  return list;
+}
+
+function updateCategoryTabState() {
+  if (!categoryFiltersEl) {
+    return;
+  }
+  categoryFiltersEl.querySelectorAll(".category-chip").forEach(function (btn) {
+    var cat = btn.getAttribute("data-category");
+    var on = cat === activeCategory;
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-selected", on ? "true" : "false");
+  });
+}
+
+function renderProductGrid(products) {
   if (!productsEl || !C) {
     return;
   }
 
-  catalog = products;
-
-  if (!catalog.length) {
-    productsEl.innerHTML = "<p>No products to display.</p>";
+  if (!products.length) {
+    productsEl.innerHTML = "<p class=\"shop-empty\">No products match — try another category or search term.</p>";
+    if (resultsHintEl) {
+      resultsHintEl.textContent = "0 products";
+    }
     return;
   }
 
-  productsEl.innerHTML = catalog
-    .map(
-      (product) => `
-        <article class="product-card">
-          <img src="${product.image_url || product.image || ""}" alt="${product.name}">
-          <div class="product-body">
-            <h3>${product.name}</h3>
-            <p>${product.description || ""}</p>
-            <div class="product-meta">
-              <span class="price">${C.money.format(product.price)}</span>
-              <span class="stock">Stock: ${product.stock != null ? product.stock : "—"}</span>
-            </div>
-            <button class="btn btn-primary" type="button" data-add="${product.id}" ${C.stockOf(product) < 1 ? "disabled" : ""}>
-              Add to cart
-            </button>
-          </div>
-        </article>
-      `
-    )
+  productsEl.innerHTML = products
+    .map(function (product) {
+      var cat = product.category ? "<span class=\"product-category\">" + escapeHtml(product.category) + "</span>" : "";
+      return (
+        '<article class="product-card">' +
+        '<img src="' +
+        escapeAttr(product.image_url || product.image || "") +
+        '" alt="' +
+        escapeAttr(product.name) +
+        '">' +
+        '<div class="product-body">' +
+        cat +
+        "<h3>" +
+        escapeHtml(product.name) +
+        "</h3>" +
+        "<p>" +
+        escapeHtml(product.description || "") +
+        "</p>" +
+        '<div class="product-meta">' +
+        '<span class="price">' +
+        C.money.format(product.price) +
+        "</span>" +
+        '<span class="stock">Stock: ' +
+        (product.stock != null ? product.stock : "—") +
+        "</span>" +
+        "</div>" +
+        '<button class="btn btn-primary" type="button" data-add="' +
+        product.id +
+        '" ' +
+        (C.stockOf(product) < 1 ? "disabled" : "") +
+        ">Add to cart</button>" +
+        "</div>" +
+        "</article>"
+      );
+    })
     .join("");
+
+  if (resultsHintEl) {
+    resultsHintEl.textContent = products.length + " product" + (products.length === 1 ? "" : "s");
+  }
+}
+
+function applyFiltersAndRender() {
+  updateCategoryTabState();
+  renderProductGrid(getFilteredProducts());
 }
 
 function updateHeaderCartCount() {
   if (!cartCountEl || !C) {
     return;
   }
-  const lines = C.cartLineItems(catalog, cart);
-  cartCountEl.textContent = C.cartCount(lines);
+  cartCountEl.textContent = String(C.rawCartQuantitySum());
 }
 
-/**
- * Step 2 (diagram): fetch(path-to-json-file).
- * Browser sends GET → server returns text body → we parse it as JSON.
- * @param {string} pathToJsonFile - URL or path to the JSON resource.
- * @returns {Promise<Array>} Parsed array of product objects.
- */
 async function fetchJsonFile(pathToJsonFile) {
-  const response = await fetch(pathToJsonFile);
-
+  var response = await fetch(pathToJsonFile);
   if (!response.ok) {
-    throw new Error(`Product request failed: ${response.status} ${response.statusText}`);
+    throw new Error("Product request failed: " + response.status + " " + response.statusText);
   }
-
-  // Network layer gives a Response; .json() turns the body into native JS values.
   return response.json();
 }
 
-/**
- * Step 1 (diagram): requestProducts() — orchestrates loading and rendering.
- * Flow: loading state → fetchJsonFile → renderUI → sync cart badge from storage.
- */
 async function requestProducts() {
   if (!productsEl || !C) {
     return;
   }
 
   productsEl.innerHTML = "<p>Loading products...</p>";
+  if (categoryFiltersEl) {
+    categoryFiltersEl.innerHTML = "";
+  }
+  if (resultsHintEl) {
+    resultsHintEl.textContent = "";
+  }
 
   try {
-    const products = await fetchJsonFile(PRODUCTS_JSON_PATH);
-    renderUI(products);
+    var products = await fetchJsonFile(PRODUCTS_JSON_PATH);
+    fullCatalog = Array.isArray(products) ? products : [];
+    C.backfillCartSnapshots(fullCatalog);
+    renderCategoryChips(collectCategories(fullCatalog));
+    activeCategory = "all";
+    if (searchInput) {
+      searchInput.value = "";
+    }
+    applyFiltersAndRender();
     cart = C.loadCart();
     updateHeaderCartCount();
   } catch (error) {
@@ -121,15 +206,41 @@ async function requestProducts() {
   }
 }
 
+if (categoryFiltersEl) {
+  categoryFiltersEl.addEventListener("click", function (event) {
+    var btn = event.target.closest(".category-chip");
+    if (!btn || !categoryFiltersEl.contains(btn)) {
+      return;
+    }
+    var cat = btn.getAttribute("data-category");
+    if (cat == null) {
+      return;
+    }
+    activeCategory = cat;
+    applyFiltersAndRender();
+  });
+}
+
+if (searchInput) {
+  searchInput.addEventListener("input", function () {
+    if (searchDebounceId) {
+      clearTimeout(searchDebounceId);
+    }
+    searchDebounceId = setTimeout(function () {
+      applyFiltersAndRender();
+    }, 200);
+  });
+}
+
 if (productsEl && C) {
-  productsEl.addEventListener("click", (event) => {
-    const addButton = event.target.closest("[data-add]");
+  productsEl.addEventListener("click", function (event) {
+    var addButton = event.target.closest("[data-add]");
     if (!addButton) {
       return;
     }
 
     cart = C.loadCart();
-    const result = C.addToCart(catalog, cart, addButton.dataset.add);
+    var result = C.addToCart(fullCatalog, cart, addButton.dataset.add);
     cart = C.loadCart();
 
     if (!result.ok) {
