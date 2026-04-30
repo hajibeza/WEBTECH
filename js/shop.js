@@ -4,7 +4,7 @@
  */
 
 const C = window.FiorCartCore;
-const productsEl = document.querySelector("#product-container");
+const productsEl = document.querySelector("#catalog");
 const cartCountEl = document.querySelector("#cartCount");
 const orderHintEl = document.querySelector("#orderMessage");
 const searchInput = document.querySelector("#productSearch");
@@ -19,7 +19,7 @@ if (!C) {
 
 /** All products from JSON — always complete so Add to cart can resolve any id. */
 let fullCatalog = [];
-let cart = C ? C.loadCart() : [];
+window.FIOR_CATALOG = [];
 let activeCategory = "all";
 let searchDebounceId = null;
 
@@ -138,7 +138,7 @@ function renderProductGrid(products) {
         (product.stock != null ? product.stock : "—") +
         "</span>" +
         "</div>" +
-        '<button class="btn btn-primary" type="button" data-add="' +
+        '<button class="btn btn-primary add-to-cart" type="button" data-id="' +
         product.id +
         '" ' +
         (C.stockOf(product) < 1 ? "disabled" : "") +
@@ -190,6 +190,7 @@ async function requestProducts() {
   try {
     var products = await fetchJsonFile(PRODUCTS_JSON_PATH);
     fullCatalog = Array.isArray(products) ? products : [];
+    window.FIOR_CATALOG = fullCatalog;
     C.backfillCartSnapshots(fullCatalog);
     renderCategoryChips(collectCategories(fullCatalog));
     activeCategory = "all";
@@ -197,7 +198,6 @@ async function requestProducts() {
       searchInput.value = "";
     }
     applyFiltersAndRender();
-    cart = C.loadCart();
     updateHeaderCartCount();
   } catch (error) {
     console.error(error);
@@ -229,33 +229,6 @@ if (searchInput) {
     searchDebounceId = setTimeout(function () {
       applyFiltersAndRender();
     }, 200);
-  });
-}
-
-if (productsEl && C) {
-  productsEl.addEventListener("click", function (event) {
-    var addButton = event.target.closest("[data-add]");
-    if (!addButton) {
-      return;
-    }
-
-    cart = C.loadCart();
-    var result = C.addToCart(fullCatalog, cart, addButton.dataset.add);
-    cart = C.loadCart();
-
-    if (!result.ok) {
-      if (orderHintEl) {
-        orderHintEl.textContent = result.message;
-        orderHintEl.className = "message";
-      }
-      return;
-    }
-
-    if (orderHintEl) {
-      orderHintEl.textContent = "";
-    }
-
-    updateHeaderCartCount();
   });
 }
 
