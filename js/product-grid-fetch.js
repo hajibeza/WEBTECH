@@ -3,11 +3,11 @@
  *
  *   requestProducts(path?)
  *        │
- *        ├─► fetchJsonFile(path)  — wraps the browser fetch() API + JSON parse
+ *        ├─► fetchJsonFile(path)  — HTTP GET (e.g. /api/products) + JSON parse
  *        │
  *        └─► renderUI(products)   — maps data to HTML inside #product-container
  *
- * Data flow:  JSON file → HTTP Response → JS array → template strings → DOM (innerHTML)
+ * Data flow:  API → HTTP Response → JS array → template strings → DOM (innerHTML)
  */
 
 function escapeHtml(text) {
@@ -16,7 +16,7 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-const DEFAULT_PRODUCTS_JSON_PATH = "data/products.json";
+const DEFAULT_PRODUCTS_URL = "/api/products";
 
 /**
  * Step 3: Push product objects into the page as card markup.
@@ -61,8 +61,8 @@ function renderUI(products) {
 }
 
 /**
- * Step 2: fetch(path-to-json-file) — retrieve file and parse JSON.
- * @param {string} pathToJsonFile
+ * Step 2: fetch(url) — GET product list and parse JSON array.
+ * @param {string} url
  * @returns {Promise<Array>}
  */
 async function fetchJsonFile(pathToJsonFile) {
@@ -83,9 +83,9 @@ async function fetchJsonFile(pathToJsonFile) {
 
 /**
  * Step 1: requestProducts() — ties fetch + render together and handles errors at the UI.
- * @param {string} [pathToJsonFile=DEFAULT_PRODUCTS_JSON_PATH]
+ * @param {string} [pathToJsonFile=DEFAULT_PRODUCTS_URL]
  */
-async function requestProducts(pathToJsonFile = DEFAULT_PRODUCTS_JSON_PATH) {
+async function requestProducts(pathToJsonFile = DEFAULT_PRODUCTS_URL) {
   const container = document.querySelector("#product-container");
 
   if (!container) {
@@ -101,11 +101,11 @@ async function requestProducts(pathToJsonFile = DEFAULT_PRODUCTS_JSON_PATH) {
   } catch (error) {
     console.error("requestProducts:", error);
     container.innerHTML =
-      '<p class="product-load-error" role="alert">Unable to load products. Please check the JSON path or your connection and try again.</p>';
+      '<p class="product-load-error" role="alert">Unable to load products. Run the backend (<code>npm start</code>) and open the site from <code>http://localhost:3000</code>.</p>';
   }
 }
 
 /** @deprecated Use requestProducts() — kept for older includes. */
-async function populateProductGrid(jsonUrl = DEFAULT_PRODUCTS_JSON_PATH) {
+async function populateProductGrid(jsonUrl = DEFAULT_PRODUCTS_URL) {
   return requestProducts(jsonUrl);
 }

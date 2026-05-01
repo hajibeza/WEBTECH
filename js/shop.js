@@ -11,13 +11,13 @@ const searchInput = document.querySelector("#productSearch");
 const categoryFiltersEl = document.querySelector("#categoryFilters");
 const resultsHintEl = document.querySelector("#productResultsHint");
 
-const PRODUCTS_JSON_PATH = "data/products.json";
+const PRODUCTS_API_URL = "http://localhost:3000/api/products";
 
 if (!C) {
   console.error("shop.js: load cart-core.js before shop.js");
 }
 
-/** All products from JSON — always complete so Add to cart can resolve any id. */
+/** All products from the API — complete catalog for Add to cart lookups. */
 let fullCatalog = [];
 window.FIOR_CATALOG = [];
 let activeCategory = "all";
@@ -166,14 +166,6 @@ function updateHeaderCartCount() {
   cartCountEl.textContent = String(C.rawCartQuantitySum());
 }
 
-async function fetchJsonFile(pathToJsonFile) {
-  var response = await fetch(pathToJsonFile);
-  if (!response.ok) {
-    throw new Error("Product request failed: " + response.status + " " + response.statusText);
-  }
-  return response.json();
-}
-
 async function requestProducts() {
   if (!productsEl || !C) {
     return;
@@ -188,7 +180,7 @@ async function requestProducts() {
   }
 
   try {
-    var products = await fetchJsonFile(PRODUCTS_JSON_PATH);
+    var products = await C.fetchCatalog(PRODUCTS_API_URL);
     fullCatalog = Array.isArray(products) ? products : [];
     window.FIOR_CATALOG = fullCatalog;
     C.backfillCartSnapshots(fullCatalog);
@@ -202,7 +194,7 @@ async function requestProducts() {
   } catch (error) {
     console.error(error);
     productsEl.innerHTML =
-      "<p>Unable to load products. Please run this project with a local web server and refresh this page.</p>";
+      "<p>Unable to load products. Start the server (<code>npm start</code>) and open <code>http://localhost:3000</code>, then refresh.</p>";
   }
 }
 

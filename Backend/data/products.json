@@ -1,0 +1,191 @@
+[
+  {
+    "id": 1,
+    "name": "Rose Romance Bouquet",
+    "description": "Premium red roses wrapped for anniversaries, proposals, and romantic surprises.",
+    "category": "Bouquets",
+    "price": 1290,
+    "image_url": "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=900&q=80",
+    "stock": 18
+  },
+  {
+    "id": 2,
+    "name": "Sunshine Tulip Box",
+    "description": "Bright tulips in a modern gift box for cheerful birthdays and congratulations.",
+    "category": "Bouquets",
+    "price": 990,
+    "image_url": "https://images.unsplash.com/photo-1520763185298-1b434c919102?auto=format&fit=crop&w=900&q=80",
+    "stock": 14
+  },
+  {
+    "id": 3,
+    "name": "Pastel Garden Basket",
+    "description": "Soft pastel mixed flowers arranged in a reusable basket for elegant gifting.",
+    "category": "Bouquets",
+    "price": 1590,
+    "image_url": "https://images.unsplash.com/photo-1468327768560-75b778cbb551?auto=format&fit=crop&w=900&q=80",
+    "stock": 10
+  },
+  {
+    "id": 4,
+    "name": "Minimal White Bouquet",
+    "description": "Elegant white flowers for weddings, congratulations, sympathy, or clean decor.",
+    "category": "Bouquets",
+    "price": 1190,
+    "image_url": "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?auto=format&fit=crop&w=900&q=80",
+    "stock": 12
+  },
+  {
+    "id": 5,
+    "name": "Mini Lavender Jar",
+    "description": "A compact lavender arrangement in a glass jar for desks and small gifts.",
+    "category": "Plants",
+    "price": 690,
+    "image_url": "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=900&q=80",
+    "stock": 24
+  },
+  {
+    "id": 6,
+    "name": "Signature Fior Deluxe",
+    "description": "Our largest seasonal arrangement with roses, lilies, greenery, and premium wrap.",
+    "category": "Premium",
+    "price": 2490,
+    "image_url": "https://images.unsplash.com/photo-1487070183336-b863922373d4?auto=format&fit=crop&w=900&q=80",
+    "stock": 7
+  },
+  {
+    "id": 7,
+    "name": "Pink Peony Charm",
+    "description": "Soft pink peonies styled with delicate fillers for a luxurious feminine gift.",
+    "category": "Bouquets",
+    "price": 1890,
+    "image_url": "https://images.unsplash.com/photo-1559563362-c667ba5f5480?auto=format&fit=crop&w=900&q=80",
+    "stock": 9
+  },
+  {
+    "id": 8,
+    "name": "Classic Lily Bouquet",
+    "description": "Fresh lilies with clean green leaves for graceful home decor and celebrations.",
+    "category": "Bouquets",
+    "price": 1390,
+    "image_url": "https://images.unsplash.com/photo-1561181286-d5c7340f7891?auto=format&fit=crop&w=900&q=80",
+    "stock": 15
+  },
+  {
+    "id": 9,
+    "name": "Wildflower Market Wrap",
+    "description": "A relaxed market-style wrap with colorful wildflowers and natural textures.",
+    "category": "Seasonal",
+    "price": 890,
+    "image_url": "https://images.unsplash.com/photo-1508610048659-a06b669e3321?auto=format&fit=crop&w=900&q=80",
+    "stock": 20
+  },
+  {
+    "id": 10,
+    "name": "Orchid Grace Pot",
+    "description": "Long-lasting orchid plant in a simple pot for offices, homes, and formal gifts.",
+    "category": "Plants",
+    "price": 1490,
+    "image_url": "https://images.unsplash.com/photo-1524598171353-ce84a71646d1?auto=format&fit=crop&w=900&q=80",
+    "stock": 11
+  },
+  {
+    "id": 11,
+    "name": "Baby Breath Cloud",
+    "description": "Airy baby's breath bouquet with soft wrapping for minimalist sweet moments.",
+    "category": "Bouquets",
+    "price": 790,
+    "image_url": "https://images.unsplash.com/photo-1533616688419-b7a585564566?auto=format&fit=crop&w=900&q=80",
+    "stock": 22
+  },
+  {
+    "id": 12,
+    "name": "Golden Sunflower Bunch",
+    "description": "Fresh sunflowers wrapped with rustic paper for happy and energetic occasions.",
+    "category": "Seasonal",
+    "price": 950,
+    "image_url": "https://images.unsplash.com/photo-1470509037663-253afd7f0f51?auto=format&fit=crop&w=900&q=80",
+    "stock": 17
+  },
+  {
+    "id": 13,
+    "name": "Blush Rose Hatbox",
+    "description": "Blush roses arranged in a premium round hatbox for polished gift presentation.",
+    "category": "Bouquets",
+    "price": 1690,
+    "image_url": "https://images.unsplash.com/photo-1494972308805-463bc619d34e?auto=format&fit=crop&w=900&q=80",
+    "stock": 13
+  },
+  {
+    "id": 14,
+    "name": "Spring Daisy Bundle",
+    "description": "Cheerful daisies and seasonal greens for casual gifting and bright decoration.",
+    "category": "Seasonal",
+    "price": 750,
+    "image_url": "https://images.unsplash.com/photo-1557428894-56bcc97113fe?auto=format&fit=crop&w=900&q=80",
+    "stock": 28
+  },
+  {
+    "id": 15,
+    "name": "Ruby Carnation Mix",
+    "description": "Red and pink carnations arranged for long-lasting color and warm affection.",
+    "category": "Bouquets",
+    "price": 820,
+    "image_url": "https://images.unsplash.com/photo-1509719662285-72cb2b2b320f?auto=format&fit=crop&w=900&q=80",
+    "stock": 19
+  },
+  {
+    "id": 16,
+    "name": "Hydrangea Blue Dream",
+    "description": "Blue hydrangea blooms arranged with premium paper for calm and elegant gifting.",
+    "category": "Premium",
+    "price": 1790,
+    "image_url": "https://images.unsplash.com/photo-1629218057230-4d9e3e74b5b3?auto=format&fit=crop&w=900&q=80",
+    "stock": 8
+  },
+  {
+    "id": 17,
+    "name": "Birthday Bright Bouquet",
+    "description": "A colorful mix of roses, gerberas, and seasonal blooms for birthday surprises.",
+    "category": "Bouquets",
+    "price": 1350,
+    "image_url": "https://images.unsplash.com/photo-1518701005037-d53b1f67c115?auto=format&fit=crop&w=900&q=80",
+    "stock": 16
+  },
+  {
+    "id": 18,
+    "name": "Elegant Sympathy Spray",
+    "description": "A respectful white and green floral spray for sympathy and memorial occasions.",
+    "category": "Premium",
+    "price": 2190,
+    "image_url": "https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&w=900&q=80",
+    "stock": 6
+  },
+  {
+    "id": 19,
+    "name": "Romantic Mixed Roses",
+    "description": "A mixed rose bouquet in red, pink, and cream shades for classic romance.",
+    "category": "Bouquets",
+    "price": 1450,
+    "image_url": "https://images.unsplash.com/photo-1548094967-e25a127d1f6d?auto=format&fit=crop&w=900&q=80",
+    "stock": 21
+  },
+  {
+    "id": 20,
+    "name": "Premium Wedding Centerpiece",
+    "description": "A refined table centerpiece with white blooms, greenery, and soft floral layers.",
+    "category": "Premium",
+    "price": 2990,
+    "image_url": "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=900&q=80",
+    "stock": 5
+  },
+  {
+    "id": 21,
+    "name": "21Premium Wedding Centerpiece",
+    "description": "A refined table centerpiece with white blooms, greenery, and soft floral layers.",
+    "category": "Premium",
+    "price": 2990,
+    "image_url": "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=900&q=80",
+    "stock": 5
+  }
+]

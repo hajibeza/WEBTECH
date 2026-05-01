@@ -18,7 +18,7 @@ function renderSummary() {
 
   if (cart.length > 0 && lines.length === 0) {
     cartSummaryEl.innerHTML =
-      '<div class="product-load-error" role="alert">Saved cart items cannot be displayed. Use a local server so product data loads, or re-add items from the shop.</div>';
+      '<div class="product-load-error" role="alert">Saved cart items cannot be displayed. Start the server and use the same origin for shop and checkout so <code>/api/products</code> loads, or re-add items from the shop.</div>';
     cartTotalEl.textContent = C.money.format(0);
     if (cartCountEl) {
       cartCountEl.textContent = String(C.rawCartQuantitySum());

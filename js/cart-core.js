@@ -32,12 +32,16 @@
     localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
   }
 
-  async function fetchCatalog(path = "data/products.json") {
+  async function fetchCatalog(path = "/api/products") {
     const response = await fetch(path);
     if (!response.ok) {
       throw new Error("Product request failed");
     }
-    return response.json();
+    const data = await response.json();
+    if (!Array.isArray(data)) {
+      throw new Error("Product request failed: expected a JSON array");
+    }
+    return data;
   }
 
   function getProduct(catalog, productId) {
@@ -77,7 +81,7 @@
     return null;
   }
 
-  /** After loading products.json, fill missing snapshot fields for older cart rows (productId-only). */
+  /** After loading the catalog, fill missing snapshot fields for older cart rows (productId-only). */
   function backfillCartSnapshots(catalog) {
     if (!catalog || !catalog.length) {
       return;
