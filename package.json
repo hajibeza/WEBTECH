@@ -17,5 +17,9 @@
   "dependencies": {
     "express": "latest",
     "sqlite3": "latest"
+  },
+  "devDependencies": {
+    "md-to-pdf": "^5.2.5",
+    "pdfkit": "^0.18.0"
   }
 }
