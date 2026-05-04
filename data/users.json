@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "firstName": "Somchai",
+    "username": "somchai.k@fior.shop",
+    "passwordHash": "$2b$10$8uB7z/3BSs9ijzUkCF3W.uQ2bUahicbYvlwlORg/zmpkMdhU2zG8K",
+    "registeredAt": "2024-01-15T08:30:00Z"
+  },
+  {
+    "id": 2,
+    "firstName": "Nattaya",
+    "username": "nattaya.p@fior.shop",
+    "passwordHash": "$2b$10$Obv.L4jRVUBW0ZBggOvDMeqH3mhaAMhPYtfWOSFWcg0ppZF76YvWe",
+    "registeredAt": "2024-02-03T10:15:00Z"
+  },
+  {
+    "id": 3,
+    "firstName": "Wanchai",
+    "username": "wanchai.m@gmail.com",
+    "passwordHash": "$2b$10$N18zFrbWwtF.UPIoa6xO5eKLFatj3x1ABtOM8BSTu6kwxjHm0OIzq",
+    "registeredAt": "2024-03-22T14:45:00Z"
+  },
+  {
+    "id": 4,
+    "firstName": "Pimchanok",
+    "username": "pimchanok.r@fior.shop",
+    "passwordHash": "$2b$10$/E60AIRFaCY.VzKqinPWlOeygUT00/oa1NWRZ9xRxXosOaNtbG/la",
+    "registeredAt": "2024-04-11T09:00:00Z"
+  },
+  {
+    "id": 5,
+    "firstName": "Thanakorn",
+    "username": "thanakorn.s@gmail.com",
+    "passwordHash": "$2b$10$xZ1oUtuJYcMTI8n60EJgo.EGyYzwbJiWTOlM86huFFMwZa3BKvEvm",
+    "registeredAt": "2024-05-07T16:20:00Z"
+  },
+  {
+    "id": 6,
+    "firstName": "Siriporn",
+    "username": "siriporn.t@fior.shop",
+    "passwordHash": "$2b$10$rx/xTLT3HyLdxVuzWxAJwuyNBy5r6QlkwPRGjFLXb.7fiA8UsGY9G",
+    "registeredAt": "2024-06-19T11:10:00Z"
+  },
+  {
+    "id": 7,
+    "firstName": "Kittipong",
+    "username": "kittipong.c@hotmail.com",
+    "passwordHash": "$2b$10$vbzNRiFgduCGuOsPxDSSnus/mpVMSoxgn2Q4GUH5UngYT8dQ284zO",
+    "registeredAt": "2024-07-30T08:55:00Z"
+  },
+  {
+    "id": 8,
+    "firstName": "Arunee",
+    "username": "arunee.w@fior.shop",
+    "passwordHash": "$2b$10$rGzs0ucjj8KtH2zJvi9i1edLUY/uTrFE9WVKz5nny5kvmA/llTD0K",
+    "registeredAt": "2024-08-14T13:40:00Z"
+  },
+  {
+    "id": 9,
+    "firstName": "Natthapong",
+    "username": "natthapong.l@gmail.com",
+    "passwordHash": "$2b$10$ugVvaX85/58v9rNaWgeyZ.rqgYurl0KJiezqGu9NnF3p6eZWNqjYu",
+    "registeredAt": "2024-09-25T17:05:00Z"
+  },
+  {
+    "id": 10,
+    "firstName": "Chonlada",
+    "username": "chonlada.n@fior.shop",
+    "passwordHash": "$2b$10$.rZ5D.Y82ZY1q3YZaoC3le9FK7TckCfA/QVO4P/sMUAth3giaYKea",
+    "registeredAt": "2024-10-08T07:30:00Z"
+  }
+]

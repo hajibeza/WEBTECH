@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const { all, get, run, initializeDatabase } = require("./database");
 const productsRouter = require("./routes/products");
+const authRouter    = require("./routes/auth");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +33,7 @@ app.use(express.json());
 // app.use(express.static(publicRoot));
 
 app.use("/api/products", productsRouter);
+app.use("/api/login",   authRouter);    // POST /api/login → authController.login
 
 // app.get("/api/orders", async (req, res) => {
 //   try {

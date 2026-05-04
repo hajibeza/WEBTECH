@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login — Fior Flower Shop</title>
+  <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet">
+  <link href="css/shop.css" rel="stylesheet" />
+  <style>
+    .login-wrapper {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 32px rgba(0,0,0,.10);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .login-card h1 { font-size: 1.6rem; margin-bottom: 8px; }
+    .login-card p  { color: #666; margin-bottom: 28px; font-size: .95rem; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: .9rem; }
+    .form-group input {
+      width: 100%; padding: 10px 14px; border: 1.5px solid #ddd;
+      border-radius: 8px; font-size: 1rem; box-sizing: border-box;
+      transition: border-color .2s;
+    }
+    .form-group input:focus { outline: none; border-color: #b97a57; }
+    .btn-login {
+      width: 100%; padding: 12px; background: #b97a57; color: #fff;
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .btn-login:hover { background: #a0673f; }
+    #loginMessage { margin-top: 14px; text-align: center; font-size: .9rem; color: #c0392b; min-height: 20px; }
+    #loginMessage.success { color: #27ae60; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav" aria-label="Main navigation">
+      <a class="brand" href="index.html">Fior</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+        <a class="cart-pill" href="cart.html">Cart <span id="cartCount">0</span></a>
+        <a href="login.html" aria-current="page">Login</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="login-wrapper">
+    <div class="login-card">
+      <h1>Sign in</h1>
+      <p>Welcome back to Fior Flower Shop.</p>
+
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" name="email"
+                 placeholder="you@example.com" autocomplete="email" required />
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" name="password"
+                 placeholder="••••••••" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn-login">Sign in</button>
+      </form>
+
+      <p id="loginMessage"></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="displayYear"></span> Fior Flower Shop.</p>
+  </footer>
+
+  <script src="js/custom.js"></script>
+  <script src="js/cart-core.js"></script>
+  <script src="js/nav-cart-count.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
