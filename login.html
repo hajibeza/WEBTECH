@@ -39,6 +39,8 @@
     .btn-login:hover { background: #a0673f; }
     #loginMessage { margin-top: 14px; text-align: center; font-size: .9rem; color: #c0392b; min-height: 20px; }
     #loginMessage.success { color: #27ae60; }
+    .register-link { margin-top: 12px; text-align: center; font-size: .92rem; }
+    .register-link a { color: #b97a57; text-decoration: none; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -49,7 +51,7 @@
         <a href="index.html">Home</a>
         <a href="shop.html">Shop</a>
         <a class="cart-pill" href="cart.html">Cart <span id="cartCount">0</span></a>
-        <a href="login.html" aria-current="page">Login</a>
+        <a href="login.html" aria-current="page" data-auth-link>Login</a>
       </div>
     </nav>
   </header>
@@ -74,6 +76,7 @@
       </form>
 
       <p id="loginMessage"></p>
+      <p class="register-link">Not have account? <a href="register.html">Register</a></p>
     </div>
   </main>
 
@@ -84,6 +87,7 @@
   <script src="js/custom.js"></script>
   <script src="js/cart-core.js"></script>
   <script src="js/nav-cart-count.js"></script>
+  <script src="js/auth-nav.js"></script>
   <script src="js/login.js"></script>
 </body>
 </html>

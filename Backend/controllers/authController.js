@@ -37,4 +37,27 @@ async function login(req, res) {
   }
 }
 
-module.exports = { login };
+/**
+ * POST /api/register
+ * Body: { firstName, email, password }
+ */
+async function register(req, res) {
+  const { firstName, email, password } = req.body || {};
+  if (!firstName || !email || !password) {
+    return res.status(400).json({ message: "First name, email and password are required." });
+  }
+
+  try {
+    const { token, user } = await authService.registerUser(firstName, email, password);
+    return res.status(201).json({
+      message: "Register successful.",
+      token,
+      user
+    });
+  } catch (error) {
+    const status = error.status || 500;
+    return res.status(status).json({ message: error.message || "Register failed." });
+  }
+}
+
+module.exports = { login, register };

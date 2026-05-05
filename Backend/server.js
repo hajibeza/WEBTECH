@@ -3,6 +3,7 @@ const path = require("path");
 const { initializeDatabase } = require("./database");
 const productsRouter = require("./routes/products");
 const authRouter = require("./routes/auth");
+const registerRouter = require("./routes/register");
 const checkoutRouter = require("./routes/checkout");
 
 const app = express();
@@ -35,6 +36,7 @@ app.use(express.static(publicRoot));
 
 app.use("/api/products", productsRouter);
 app.use("/api/login", authRouter);
+app.use("/api/register", registerRouter);
 app.use("/api/checkout", checkoutRouter);
 
 initializeDatabase()
