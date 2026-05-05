@@ -35,7 +35,7 @@
         <span class="eyebrow">Almost there</span>
         <h1>Checkout</h1>
       </div>
-      <p>Confirm your order summary and enter delivery details. Orders are saved locally as mock data.</p>
+      <p>Confirm your order summary and enter delivery details. Checkout now validates email and 16-digit card via API.</p>
     </div>
 
     <div class="checkout-layout" style="width: min(1180px, calc(100% - 32px)); margin: 0 auto;">
@@ -58,6 +58,7 @@
           <input type="tel" name="phone" placeholder="Phone number" required autocomplete="tel">
         </div>
         <input type="email" name="email" placeholder="Email address" required autocomplete="email">
+        <input type="text" name="creditCard" placeholder="Credit card (16 digits)" inputmode="numeric" pattern="[0-9]{16}" required>
         <textarea name="address" placeholder="Delivery address" required autocomplete="street-address"></textarea>
         <button class="btn btn-primary" type="submit">Place order</button>
         <p class="message" id="orderMessage" role="status"></p>

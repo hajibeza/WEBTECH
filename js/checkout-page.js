@@ -4,6 +4,7 @@ const cartTotalEl = document.querySelector("#cartTotal");
 const cartCountEl = document.querySelector("#cartCount");
 const checkoutForm = document.querySelector("#checkoutForm");
 const orderMessageEl = document.querySelector("#orderMessage");
+const CHECKOUT_API_URL = "http://localhost:3000/api/checkout";
 
 let catalog = [];
 let cart = [];
@@ -59,7 +60,7 @@ async function init() {
 }
 
 if (checkoutForm && C) {
-  checkoutForm.addEventListener("submit", (event) => {
+  checkoutForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     cart = C.loadCart();
 
@@ -69,20 +70,52 @@ if (checkoutForm && C) {
       return;
     }
 
-    const result = C.buildOrderPayload(catalog, cart, new FormData(checkoutForm));
-    if (!result.ok) {
-      orderMessageEl.textContent = result.message;
+    const formData = new FormData(checkoutForm);
+    const lines = C.cartLineItems(catalog, cart);
+    const items = lines.map((line) => ({
+      productId: line.productId,
+      productName: line.product.name,
+      price: line.product.price,
+      quantity: line.quantity
+    }));
+
+    const payload = {
+      customerName: formData.get("customerName"),
+      phone: formData.get("phone"),
+      email: formData.get("email"),
+      creditCard: formData.get("creditCard"),
+      address: formData.get("address"),
+      items
+    };
+
+    try {
+      const response = await fetch(CHECKOUT_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        const firstError = data.errors ? Object.values(data.errors)[0] : data.message;
+        orderMessageEl.textContent = firstError || "Checkout failed.";
+        orderMessageEl.className = "message";
+        // IMPORTANT: do NOT clear cart on failed checkout
+        return;
+      }
+
+      C.saveCart([]);
+      checkoutForm.reset();
+      renderSummary();
+
+      orderMessageEl.textContent = `Order #${data.orderId} created successfully. Total ${C.money.format(data.total)}.`;
+      orderMessageEl.className = "message success";
+    } catch (error) {
+      console.error(error);
+      orderMessageEl.textContent = "Cannot reach checkout API. Please ensure server is running.";
       orderMessageEl.className = "message";
-      return;
+      // IMPORTANT: do NOT clear cart on network errors
     }
-
-    C.persistOrder(result.order);
-    C.saveCart([]);
-    checkoutForm.reset();
-    renderSummary();
-
-    orderMessageEl.textContent = `Mock order #${result.order.id} created successfully. Total ${C.money.format(result.order.total)}.`;
-    orderMessageEl.className = "message success";
   });
 }
 
