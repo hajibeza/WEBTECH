@@ -1,4 +1,13 @@
-const API_LOGIN_URL = "/api/login";
+function resolveApiUrl(path) {
+  // If pages are opened outside backend origin (e.g. Live Server on :5500),
+  // force requests to the Express API running on localhost:3000.
+  if (window.location.port !== "3000") {
+    return `http://localhost:3000${path}`;
+  }
+  return path;
+}
+
+const API_LOGIN_URL = resolveApiUrl("/api/login");
 const TOKEN_KEY = "fiorToken";
 const USER_KEY = "fiorUser";
 

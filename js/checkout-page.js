@@ -4,7 +4,31 @@ const cartTotalEl = document.querySelector("#cartTotal");
 const cartCountEl = document.querySelector("#cartCount");
 const checkoutForm = document.querySelector("#checkoutForm");
 const orderMessageEl = document.querySelector("#orderMessage");
-const CHECKOUT_API_URL = "http://localhost:3000/api/checkout";
+
+function resolveCheckoutApiUrl(path) {
+  // Match login/register: if not served from :3000, point at backend origin.
+  if (window.location.port !== "3000") {
+    return `http://localhost:3000${path}`;
+  }
+  return path;
+}
+
+const CHECKOUT_API_URL = resolveCheckoutApiUrl("/api/checkout");
+
+const USER_KEY = "fiorUser";
+
+/** If user logged in via login/register, fiorUser has { id, firstName, username } */
+function getLoggedInUserId() {
+  try {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) return undefined;
+    const user = JSON.parse(raw);
+    const id = Number(user && user.id);
+    return Number.isInteger(id) && id > 0 ? id : undefined;
+  } catch (_) {
+    return undefined;
+  }
+}
 
 let catalog = [];
 let cart = [];
@@ -79,13 +103,15 @@ if (checkoutForm && C) {
       quantity: line.quantity
     }));
 
+    const userId = getLoggedInUserId();
     const payload = {
       customerName: formData.get("customerName"),
       phone: formData.get("phone"),
       email: formData.get("email"),
       creditCard: formData.get("creditCard"),
       address: formData.get("address"),
-      items
+      items,
+      ...(userId !== undefined ? { userId } : {})
     };
 
     try {

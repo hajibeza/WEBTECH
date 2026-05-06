@@ -10,7 +10,7 @@
  *        - email format correct (regex)
  *        - password >= 6 characters
  *        - email not already in use (409 if duplicate)
- *   5. Server hashes password with bcrypt, saves new user to users.json
+ *   5. Server hashes password with bcrypt, saves new user to SQLite users table
  *   6. Server signs a JWT token containing userId + firstName
  *   7. Server responds 201 { token, user }
  *   8. Frontend saves token + user to localStorage ("fiorToken", "fiorUser")
@@ -19,7 +19,16 @@
  * On error: show error message, do NOT redirect (keep form data intact)
  */
 
-const API_REGISTER_URL = "/api/register";
+function resolveApiUrl(path) {
+  // If page is opened on a non-API origin (e.g. Live Server :5500),
+  // route requests directly to backend origin.
+  if (window.location.port !== "3000") {
+    return `http://localhost:3000${path}`;
+  }
+  return path;
+}
+
+const API_REGISTER_URL = resolveApiUrl("/api/register");
 const TOKEN_KEY = "fiorToken";
 const USER_KEY  = "fiorUser";
 

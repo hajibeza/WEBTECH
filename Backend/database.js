@@ -1,8 +1,10 @@
+const fs = require("fs/promises");
 const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
 
 const dbPath = path.join(__dirname, "fior.sqlite");
 const db = new sqlite3.Database(dbPath);
+const USERS_JSON_PATH = path.join(__dirname, "..", "data", "users.json");
 
 const seedProducts = [
   {
@@ -92,6 +94,16 @@ async function initializeDatabase() {
   await run("PRAGMA foreign_keys = ON");
 
   await run(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      first_name TEXT NOT NULL,
+      username TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      registered_at TEXT NOT NULL
+    )
+  `);
+
+  await run(`
     CREATE TABLE IF NOT EXISTS products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -106,13 +118,15 @@ async function initializeDatabase() {
   await run(`
     CREATE TABLE IF NOT EXISTS orders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
       customer_name TEXT NOT NULL,
       email TEXT NOT NULL,
       phone TEXT NOT NULL,
       address TEXT NOT NULL,
       total INTEGER NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending',
-      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id)
     )
   `);
 
@@ -136,6 +150,32 @@ async function initializeDatabase() {
         "INSERT INTO products (name, description, price, image, stock) VALUES (?, ?, ?, ?, ?)",
         [product.name, product.description, product.price, product.image, product.stock]
       );
+    }
+  }
+
+  // One-time seed to move existing JSON users into SQLite.
+  const userCount = await get("SELECT COUNT(*) AS count FROM users");
+  if (userCount.count === 0) {
+    try {
+      const usersRaw = await fs.readFile(USERS_JSON_PATH, "utf8");
+      const users = JSON.parse(usersRaw);
+      if (Array.isArray(users)) {
+        for (const user of users) {
+          await run(
+            "INSERT INTO users (id, first_name, username, password_hash, registered_at) VALUES (?, ?, ?, ?, ?)",
+            [
+              Number(user.id) || null,
+              String(user.firstName || "").trim() || "User",
+              String(user.username || "").trim().toLowerCase(),
+              String(user.passwordHash || ""),
+              String(user.registeredAt || new Date().toISOString())
+            ]
+          );
+        }
+      }
+    } catch (error) {
+      // Keep startup resilient if legacy users.json is missing or malformed.
+      console.warn("Skipping users seed from JSON:", error.message);
     }
   }
 }

@@ -1,27 +1,21 @@
-const fs = require("fs/promises");
-const path = require("path");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { get, run } = require("../store-db");
 
 // Secret key for signing JWT — in production use process.env.JWT_SECRET
 const JWT_SECRET = process.env.JWT_SECRET || "fior-dev-secret-change-in-production";
 const JWT_EXPIRES_IN = "7d";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Path to the user database JSON file
-const USERS_PATH = path.join(__dirname, "..", "..", "data", "users.json");
-
-/**
- * Load all users from the JSON file (acts as our database).
- * @returns {Promise<object[]>}
- */
-async function loadUsers() {
-  const raw = await fs.readFile(USERS_PATH, "utf8");
-  return JSON.parse(raw);
-}
-
-async function saveUsers(users) {
-  await fs.writeFile(USERS_PATH, JSON.stringify(users, null, 2), "utf8");
+function mapRowToUser(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    firstName: row.first_name,
+    username: row.username,
+    passwordHash: row.password_hash,
+    registeredAt: row.registered_at
+  };
 }
 
 function signUserToken(user) {
@@ -50,12 +44,12 @@ function signUserToken(user) {
  * @returns {Promise<{ token: string, user: object }>}
  */
 async function loginUser(email, password) {
-  const users = await loadUsers();
-
   // Step 1 — Look up user by email (case-insensitive)
-  const user = users.find(
-    (u) => u.username.toLowerCase() === email.toLowerCase()
+  const row = await get(
+    "SELECT id, first_name, username, password_hash, registered_at FROM users WHERE lower(username) = lower(?) LIMIT 1",
+    [String(email || "").trim()]
   );
+  const user = mapRowToUser(row);
 
   if (!user) {
     // Email not found in database → 401
@@ -88,7 +82,7 @@ async function loginUser(email, password) {
 }
 
 /**
- * Register a new user into users.json.
+ * Register a new user into SQLite users table.
  * - Reject duplicate email
  * - Hash password with bcrypt
  * - Return JWT token for immediate signed-in state
@@ -114,26 +108,25 @@ async function registerUser(firstName, email, password) {
     throw err;
   }
 
-  const users = await loadUsers();
-  const exists = users.some((u) => String(u.username).toLowerCase() === cleanEmail);
+  const exists = await get("SELECT id FROM users WHERE lower(username) = lower(?) LIMIT 1", [cleanEmail]);
   if (exists) {
     const err = new Error("This email is already registered.");
     err.status = 409;
     throw err;
   }
 
-  const nextId = users.reduce((max, u) => Math.max(max, Number(u.id) || 0), 0) + 1;
   const passwordHash = await bcrypt.hash(cleanPassword, 10);
-  const newUser = {
-    id: nextId,
-    firstName: cleanFirstName,
-    username: cleanEmail,
-    passwordHash,
-    registeredAt: new Date().toISOString()
-  };
+  const registeredAt = new Date().toISOString();
+  const inserted = await run(
+    "INSERT INTO users (first_name, username, password_hash, registered_at) VALUES (?, ?, ?, ?)",
+    [cleanFirstName, cleanEmail, passwordHash, registeredAt]
+  );
 
-  users.push(newUser);
-  await saveUsers(users);
+  const newUser = {
+    id: inserted.id,
+    firstName: cleanFirstName,
+    username: cleanEmail
+  };
 
   const token = signUserToken(newUser);
   return {

@@ -1,10 +1,12 @@
 const express = require("express");
 const path = require("path");
 const { initializeDatabase } = require("./database");
+const { initializeStoreDatabase } = require("./store-db");
 const productsRouter = require("./routes/products");
 const authRouter = require("./routes/auth");
 const registerRouter = require("./routes/register");
 const checkoutRouter = require("./routes/checkout");
+const storeOrdersRouter = require("./routes/store-orders");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,14 +34,15 @@ function allowLocalDevCors(req, res, next) {
 
 app.use(allowLocalDevCors);
 app.use(express.json());
-app.use(express.static(publicRoot));
+// app.use(express.static(publicRoot));
 
 app.use("/api/products", productsRouter);
 app.use("/api/login", authRouter);
 app.use("/api/register", registerRouter);
 app.use("/api/checkout", checkoutRouter);
+app.use("/api/store/orders", storeOrdersRouter);
 
-initializeDatabase()
+Promise.all([initializeDatabase(), initializeStoreDatabase()])
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Fior API at http://localhost:${PORT} (CORS enabled for localhost / 127.0.0.1)`);
