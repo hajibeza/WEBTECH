@@ -1,22 +1,23 @@
+/**
+ * authService.js — Business logic for Identity (login + register).
+ *
+ * Separation of Concerns:
+ *   This layer owns RULES:
+ *     - Password must match (bcrypt)
+ *     - Email must be unique
+ *     - JWT must be signed with the right secret
+ *
+ *   It does NOT own DATA ACCESS.
+ *   All SQL is delegated to userRepository.
+ */
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { get, run } = require("../store-db");
+const userRepository = require("../repositories/userRepository");
 
-// Secret key for signing JWT — in production use process.env.JWT_SECRET
 const JWT_SECRET = process.env.JWT_SECRET || "fior-dev-secret-change-in-production";
 const JWT_EXPIRES_IN = "7d";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function mapRowToUser(row) {
-  if (!row) return null;
-  return {
-    id: row.id,
-    firstName: row.first_name,
-    username: row.username,
-    passwordHash: row.password_hash,
-    registeredAt: row.registered_at
-  };
-}
 
 function signUserToken(user) {
   return jwt.sign(
@@ -29,68 +30,52 @@ function signUserToken(user) {
 /**
  * GATEKEEPER — Authenticate a user by email and password.
  *
- * Step 1: Find the user in the database by email (username).
+ * Step 1: Ask Repository to find user by email.
  *         If not found → throw 401 Unauthorized.
- *
- * Step 2: Use bcrypt.compare() to check submitted password
- *         against the stored hash.
+ * Step 2: Use bcrypt.compare() to verify password against stored hash.
  *         If no match → throw 401 Unauthorized.
- *
- * Step 3: Sign a JWT containing the user's ID and firstName.
- *         Return the token + basic user info.
- *
- * @param {string} email       - Submitted email (username)
- * @param {string} password    - Submitted plain-text password
- * @returns {Promise<{ token: string, user: object }>}
+ * Step 3: Sign a JWT containing userId + firstName.
  */
 async function loginUser(email, password) {
-  // Step 1 — Look up user by email (case-insensitive)
-  const row = await get(
-    "SELECT id, first_name, username, password_hash, registered_at FROM users WHERE lower(username) = lower(?) LIMIT 1",
-    [String(email || "").trim()]
-  );
-  const user = mapRowToUser(row);
+  // Step 1 — delegate DB lookup to Repository
+  const user = await userRepository.findByEmail(email);
 
   if (!user) {
-    // Email not found in database → 401
     const err = new Error("Invalid email or password.");
     err.status = 401;
     throw err;
   }
 
-  // Step 2 — bcrypt.compare: hash the submitted password and compare with stored hash
+  // Step 2 — business rule: verify password (bcrypt lives in Service, not Repository)
   const passwordMatch = await bcrypt.compare(password, user.passwordHash);
-
   if (!passwordMatch) {
-    // Password does not match → 401
     const err = new Error("Invalid email or password.");
     err.status = 401;
     throw err;
   }
 
-  // Step 3 — Sign JWT with user's ID (never include sensitive data in token)
+  // Step 3 — business rule: sign JWT
   const token = signUserToken(user);
-
   return {
     token,
-    user: {
-      id: user.id,
-      firstName: user.firstName,
-      username: user.username
-    }
+    user: { id: user.id, firstName: user.firstName, username: user.username }
   };
 }
 
 /**
- * Register a new user into SQLite users table.
- * - Reject duplicate email
- * - Hash password with bcrypt
- * - Return JWT token for immediate signed-in state
+ * Register a new user.
+ *
+ * Business rules (all live here in Service):
+ *   - firstName must be non-empty
+ *   - email must match regex
+ *   - password must be >= 6 chars
+ *   - email must not already exist (409 Conflict)
+ * Data persistence is delegated to Repository.
  */
 async function registerUser(firstName, email, password) {
   const cleanFirstName = String(firstName || "").trim();
-  const cleanEmail = String(email || "").trim().toLowerCase();
-  const cleanPassword = String(password || "");
+  const cleanEmail     = String(email    || "").trim().toLowerCase();
+  const cleanPassword  = String(password || "");
 
   if (!cleanFirstName) {
     const err = new Error("First name is required.");
@@ -108,34 +93,30 @@ async function registerUser(firstName, email, password) {
     throw err;
   }
 
-  const exists = await get("SELECT id FROM users WHERE lower(username) = lower(?) LIMIT 1", [cleanEmail]);
+  // Delegate duplicate-check to Repository
+  const exists = await userRepository.existsByEmail(cleanEmail);
   if (exists) {
     const err = new Error("This email is already registered.");
     err.status = 409;
     throw err;
   }
 
+  // Business rule: hash password (bcrypt lives here, not in Repository)
   const passwordHash = await bcrypt.hash(cleanPassword, 10);
   const registeredAt = new Date().toISOString();
-  const inserted = await run(
-    "INSERT INTO users (first_name, username, password_hash, registered_at) VALUES (?, ?, ?, ?)",
-    [cleanFirstName, cleanEmail, passwordHash, registeredAt]
-  );
 
-  const newUser = {
-    id: inserted.id,
+  // Delegate INSERT to Repository
+  const newUser = await userRepository.createUser({
     firstName: cleanFirstName,
-    username: cleanEmail
-  };
+    username: cleanEmail,
+    passwordHash,
+    registeredAt
+  });
 
   const token = signUserToken(newUser);
   return {
     token,
-    user: {
-      id: newUser.id,
-      firstName: newUser.firstName,
-      username: newUser.username
-    }
+    user: { id: newUser.id, firstName: newUser.firstName, username: newUser.username }
   };
 }
 

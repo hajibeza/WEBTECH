@@ -1,8 +1,59 @@
-const { run } = require("../store-db");
+/**
+ * checkoutService.js — Business logic for checkout.
+ *
+ * Separation of Concerns:
+ *   This layer owns RULES:
+ *     - Validate email / credit card / cart items
+ *     - Resolve prices via simulated Catalog Service call
+ *     - Resolve userId via simulated Identity Service call
+ *     - Calculate order total
+ *
+ *   It does NOT own DATA ACCESS.
+ *   All SQL is delegated to orderRepository.
+ */
+
+const orderRepository = require("../repositories/orderRepository");
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CREDIT_CARD_16_REGEX = /^\d{16}$/;
 
+// ---------------------------------------------------------------------------
+// Simulated Microservice Calls
+// In production: swap these URLs to real service hosts via env vars.
+// ---------------------------------------------------------------------------
+const IDENTITY_SERVICE_URL = process.env.IDENTITY_SERVICE_URL || "http://localhost:3000";
+const CATALOG_SERVICE_URL  = process.env.CATALOG_SERVICE_URL  || "http://localhost:3000";
+
+async function verifyTokenFromIdentityService(token) {
+  if (!token) return null;
+  try {
+    const res = await fetch(`${IDENTITY_SERVICE_URL}/api/auth/verify`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (_) {
+    return null; // Identity down → guest checkout
+  }
+}
+
+async function getProductFromCatalogService(productId) {
+  try {
+    const res = await fetch(`${CATALOG_SERVICE_URL}/api/products`);
+    if (!res.ok) return null;
+    const list = await res.json();
+    return Array.isArray(list)
+      ? list.find((p) => Number(p.id) === Number(productId)) || null
+      : null;
+  } catch (_) {
+    return null; // Catalog down → fall back to frontend price
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Validation (business rule — stays in Service)
+// ---------------------------------------------------------------------------
 function toNumber(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : NaN;
@@ -14,15 +65,15 @@ function validateCheckoutInput(payload) {
   if (!Array.isArray(payload.items) || payload.items.length === 0) {
     errors.items = "Cart items are required.";
   } else {
-    const invalidItem = payload.items.find((item) => {
-      const productId = toNumber(item.productId);
-      const price = toNumber(item.price);
-      const quantity = toNumber(item.quantity);
-      return !Number.isInteger(productId) || !Number.isFinite(price) || !Number.isInteger(quantity) || quantity < 1;
+    const bad = payload.items.find((item) => {
+      return (
+        !Number.isInteger(toNumber(item.productId)) ||
+        !Number.isFinite(toNumber(item.price)) ||
+        !Number.isInteger(toNumber(item.quantity)) ||
+        Number(item.quantity) < 1
+      );
     });
-    if (invalidItem) {
-      errors.items = "Each cart item must include valid productId, price, and quantity.";
-    }
+    if (bad) errors.items = "Each cart item must include valid productId, price, and quantity.";
   }
 
   if (!payload.email || !EMAIL_REGEX.test(String(payload.email).trim())) {
@@ -41,52 +92,41 @@ function calculateTotal(items) {
   return items.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0);
 }
 
+// ---------------------------------------------------------------------------
+// Save order — orchestrate service calls then delegate DB write to Repository
+// ---------------------------------------------------------------------------
 async function saveCheckoutOrder(payload) {
-  const total = calculateTotal(payload.items);
-  const userIdParsed = Number(payload.userId);
-  const safeUserId = Number.isInteger(userIdParsed) && userIdParsed > 0 ? userIdParsed : null;
+  // Business rule: resolve userId from Identity Service
+  const identityResult = await verifyTokenFromIdentityService(payload._authToken || null);
+  const userId = identityResult ? Number(identityResult.userId) || null : null;
 
-  await run("BEGIN TRANSACTION");
-  try {
-    // Normalized ERD: one orders row + many order_items rows (FK to products.order_id chain)
-    const orderRow = await run(
-      `INSERT INTO orders (user_id, customer_name, email, phone, address, total, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        safeUserId,
-        String(payload.customerName || "").trim(),
-        String(payload.email || "").trim(),
-        String(payload.phone || "").trim(),
-        String(payload.address || "").trim(),
-        total,
-        "pending"
-      ]
-    );
+  // Business rule: verify prices from Catalog Service
+  const resolvedItems = await Promise.all(
+    payload.items.map(async (item) => {
+      const catalogProduct = await getProductFromCatalogService(item.productId);
+      return {
+        productId:   Number(item.productId),
+        productName: catalogProduct ? catalogProduct.name  : String(item.productName || "Unknown"),
+        price:       catalogProduct ? Number(catalogProduct.price) : Number(item.price),
+        quantity:    Number(item.quantity)
+      };
+    })
+  );
 
-    for (const item of payload.items) {
-      await run(
-        `INSERT INTO order_items (order_id, product_id, product_name, price, quantity)
-         VALUES (?, ?, ?, ?, ?)`,
-        [
-          orderRow.id,
-          Number(item.productId),
-          String(item.productName || "Unknown"),
-          Number(item.price),
-          Number(item.quantity)
-        ]
-      );
-    }
+  const total = calculateTotal(resolvedItems);
 
-    await run("COMMIT");
-    return { order: { id: orderRow.id }, total };
-  } catch (error) {
-    await run("ROLLBACK");
-    throw error;
-  }
+  // Delegate all SQL to Repository
+  const { orderId } = await orderRepository.createOrderWithItems({
+    userId,
+    customerName: payload.customerName,
+    email:        payload.email,
+    phone:        payload.phone,
+    address:      payload.address,
+    total,
+    items:        resolvedItems
+  });
+
+  return { order: { id: orderId }, total };
 }
 
-module.exports = {
-  validateCheckoutInput,
-  saveCheckoutOrder,
-  calculateTotal
-};
+module.exports = { validateCheckoutInput, saveCheckoutOrder, calculateTotal };

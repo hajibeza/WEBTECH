@@ -38,6 +38,7 @@ app.use(express.json());
 
 app.use("/api/products", productsRouter);
 app.use("/api/login", authRouter);
+app.use("/api/auth", authRouter);
 app.use("/api/register", registerRouter);
 app.use("/api/checkout", checkoutRouter);
 app.use("/api/store/orders", storeOrdersRouter);
