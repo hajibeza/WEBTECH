@@ -15,8 +15,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const userRepository = require("../repositories/userRepository");
 
-const JWT_SECRET = process.env.JWT_SECRET || "fior-dev-secret-change-in-production";
-const JWT_EXPIRES_IN = "7d";
+const JWT_SECRET     = process.env.JWT_SECRET     || "fior-dev-secret-change-in-production";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+const BCRYPT_ROUNDS  = Number(process.env.BCRYPT_ROUNDS) || 10;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function signUserToken(user) {
@@ -102,7 +103,7 @@ async function registerUser(firstName, email, password) {
   }
 
   // Business rule: hash password (bcrypt lives here, not in Repository)
-  const passwordHash = await bcrypt.hash(cleanPassword, 10);
+  const passwordHash = await bcrypt.hash(cleanPassword, BCRYPT_ROUNDS);
   const registeredAt = new Date().toISOString();
 
   // Delegate INSERT to Repository

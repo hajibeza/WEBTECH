@@ -1,3 +1,15 @@
+// Load .env variables FIRST — before any other require reads process.env
+require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
+
+// Zero-Config Guard (Slide 6.2): crash fast with a helpful message if critical vars are missing
+const REQUIRED_ENV = ["JWT_SECRET"];
+const missing = REQUIRED_ENV.filter((key) => !process.env[key]);
+if (missing.length > 0) {
+  console.error(`\n[STARTUP ERROR] Missing required environment variables: ${missing.join(", ")}`);
+  console.error("  → Create a .env file from .env.example and set the missing values.\n");
+  process.exit(1);
+}
+
 const express = require("express");
 const path = require("path");
 const { initializeDatabase } = require("./database");
@@ -10,6 +22,8 @@ const storeOrdersRouter = require("./routes/store-orders");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+// JWT_SECRET, IDENTITY_SERVICE_URL, CATALOG_SERVICE_URL are now read
+// from .env by authService and checkoutService via process.env automatically.
 
 /** Static site lives in repo root (HTML, css, js, data) */
 const publicRoot = path.join(__dirname, "..");

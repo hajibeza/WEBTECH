@@ -8,6 +8,27 @@
 const { run } = require("../store-db");
 
 /**
+ * Fix #3 — Sanitize and type-guard each item at the Repository boundary.
+ * Prevents SQL injection if a future dev switches to string interpolation.
+ */
+function sanitizeOrderItem(item) {
+  const productId = Number(item.productId);
+  const price     = Number(item.price);
+  const quantity  = Number(item.quantity);
+
+  if (!Number.isInteger(productId) || productId <= 0) throw new Error("Invalid productId");
+  if (!Number.isFinite(price)      || price < 0)      throw new Error("Invalid price");
+  if (!Number.isInteger(quantity)  || quantity < 1)   throw new Error("Invalid quantity");
+
+  return {
+    productId,
+    productName: String(item.productName || "Unknown").slice(0, 200),
+    price,
+    quantity
+  };
+}
+
+/**
  * Persist one order header + its line items inside a single transaction.
  *
  * @param {{ userId, customerName, email, phone, address, total, items[] }} orderData
@@ -41,18 +62,13 @@ async function createOrderWithItems(orderData) {
       ]
     );
 
-    // Insert one order_items row per cart line
-    for (const item of items) {
+    // Insert one order_items row per cart line (sanitized at boundary)
+    for (const raw of items) {
+      const item = sanitizeOrderItem(raw);
       await run(
         `INSERT INTO order_items (order_id, product_id, product_name, price, quantity)
          VALUES (?, ?, ?, ?, ?)`,
-        [
-          orderRow.id,
-          Number(item.productId),
-          String(item.productName || "Unknown"),
-          Number(item.price),
-          Number(item.quantity)
-        ]
+        [orderRow.id, item.productId, item.productName, item.price, item.quantity]
       );
     }
 

@@ -85,6 +85,22 @@ function validateCheckoutInput(payload) {
     errors.creditCard = "Credit card number must be exactly 16 digits.";
   }
 
+  // Fix #2 — Validate fields that were previously unchecked (audit finding)
+  const customerName = String(payload.customerName || "").trim();
+  if (!customerName || customerName.length > 100) {
+    errors.customerName = "Customer name is required and must be under 100 characters.";
+  }
+
+  const phone = String(payload.phone || "").replace(/\D/g, "");
+  if (phone.length < 9 || phone.length > 15) {
+    errors.phone = "Phone must be 9–15 digits.";
+  }
+
+  const address = String(payload.address || "").trim();
+  if (!address || address.length > 300) {
+    errors.address = "Address is required and must be under 300 characters.";
+  }
+
   return { errors, normalizedCard };
 }
 
@@ -100,14 +116,21 @@ async function saveCheckoutOrder(payload) {
   const identityResult = await verifyTokenFromIdentityService(payload._authToken || null);
   const userId = identityResult ? Number(identityResult.userId) || null : null;
 
-  // Business rule: verify prices from Catalog Service
+  // Fix #1 — Reject order if Catalog is down (never fall back to client-supplied price)
   const resolvedItems = await Promise.all(
     payload.items.map(async (item) => {
       const catalogProduct = await getProductFromCatalogService(item.productId);
+
+      if (!catalogProduct) {
+        const err = new Error("Product catalog is unavailable. Please try again shortly.");
+        err.status = 503;
+        throw err;
+      }
+
       return {
         productId:   Number(item.productId),
-        productName: catalogProduct ? catalogProduct.name  : String(item.productName || "Unknown"),
-        price:       catalogProduct ? Number(catalogProduct.price) : Number(item.price),
+        productName: catalogProduct.name,
+        price:       Number(catalogProduct.price),  // server-verified price only
         quantity:    Number(item.quantity)
       };
     })
